@@ -6,11 +6,11 @@
   "author": "onepiece-xu",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/onepiece-xu/dsh-plugin-memory.git"
+    "url": "git+https://github.com/onepiece-xu/dsh-memory-banks.git"
   },
-  "homepage": "https://github.com/onepiece-xu/dsh-plugin-memory#readme",
+  "homepage": "https://github.com/onepiece-xu/dsh-memory-banks#readme",
   "bugs": {
-    "url": "https://github.com/onepiece-xu/dsh-plugin-memory/issues"
+    "url": "https://github.com/onepiece-xu/dsh-memory-banks/issues"
   },
   "keywords": [
     "deepseek-harness",
@@ -56,7 +56,8 @@
   "scripts": {
     "build": "tsc -p tsconfig.json",
     "typecheck": "tsc -p tsconfig.json --noEmit",
-    "test": "npm run build && node --test \"tests/**/*.test.mjs\""
+    "test": "npm run build && node --test \"tests/**/*.test.mjs\"",
+    "prepublishOnly": "npm run build"
   },
   "dependencies": {
     "@deepseek-ai/dsh-llm": "0.2.0-rc.2",

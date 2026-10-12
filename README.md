@@ -1,6 +1,6 @@
 # dsh-memory-banks
 
-> 仓库：<https://github.com/onepiece-xu/dsh-plugin-memory> · MIT
+> 仓库：<https://github.com/onepiece-xu/dsh-memory-banks> · MIT
 
 hermes-agent 那套**有界、持久**的记忆机制，做成 DSH 原生插件（不是 Pi 扩展、不需要 `pi2dsh` 桥）。
 
@@ -120,12 +120,18 @@ dsh --profile dev                              # 启动后即可用工具与命�
 | 压缩前落盘 `flushOnCompact` | DSH 没有 pre-compaction 钩子（核实：只有失败回退 `compaction/summary-error`），无法阻塞；只能观察 |
 | Pi TUI 渲染 / `pi.registerCommand` | DSH 命令是纯文本返回；富交互走客户端 bundle（本插件有 settings 面板） |
 
-## 发布注意
+## 安装与发布
 
-- **npm 上 `dsh-memory-banks` 这个名字已被占用**（`latest` 0.9.3，不是本仓库）。要发布到 npm 请用 scope，例如把 `name` 改成 `@onepiece-xu/dsh-plugin-memory`，或换一个未占用的名字。目前本仓库以**源码/Git 安装**方式维护即可：
-  ```sh
-  dsh plugin --profile web add link:/path/to/dsh-memory-banks   # 本地开发
-  dsh plugin --profile web add github:onepiece-xu/dsh-plugin-memory   # 从 GitHub 装
-  ```
+从 GitHub 安装（推荐，无需 npm 发布）：
+
+```sh
+dsh plugin --profile web add github:onepiece-xu/dsh-memory-banks
+# 本地开发用 link：dsh plugin --profile web add link:/path/to/dsh-memory-banks
+```
+
+发布到 npm：**`dsh-memory-banks` 这个名字在 npm 上是空的**（2026-10-12 核实），`npm login` 之后直接 `npm publish` 即可（`publishConfig.access` 已设 `public`，`files` 只带 `dist` / `lib` / patch / README）。注意 `dist/` 不在 git 里，发布前先 `npm run build`（`prepublishOnly` 未配置，建议加一条 `"prepublishOnly": "npm run build"`）。
+
+其它注意：
+
 - `peerDependencies` 必须**包含运行中的 DSH 版本**：装包前会校验 `@deepseek-ai/dsh` / `@deepseek-ai/dsh-*` 的范围，不匹配直接拒绝（例外：`dsh plugin allow-version <pkg>@<ver> --dsh-version <ver> --accept-risk`）。
 - npm 上 `@deepseek-ai/dsh-tools` 的 `latest` 是过期的 `0.0.1-rc.1`，必须钉 `0.2.0-rc.2`（`next` 标签）。
