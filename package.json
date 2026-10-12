@@ -1,8 +1,31 @@
 {
   "name": "dsh-plugin-memory",
   "version": "0.1.0",
-  "description": "hermes-agent's bounded, durable memory banks for DeepSeek Harness: memory / memory_search / memory_list tools over storage-domain, a system-prompt policy section, and a settings panel.",
+  "description": "Durable, bounded memory for DeepSeek Harness: six memory tools, standing instructions, background review, crash-safe consolidation, content scanning, and a settings panel.",
   "license": "MIT",
+  "author": "onepiece-xu",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/onepiece-xu/dsh-plugin-memory.git"
+  },
+  "homepage": "https://github.com/onepiece-xu/dsh-plugin-memory#readme",
+  "bugs": {
+    "url": "https://github.com/onepiece-xu/dsh-plugin-memory/issues"
+  },
+  "keywords": [
+    "deepseek-harness",
+    "dsh",
+    "dsh-plugin",
+    "memory",
+    "agent-memory",
+    "persistent-memory"
+  ],
+  "publishConfig": {
+    "access": "public"
+  },
+  "engines": {
+    "node": ">=22.19"
+  },
   "type": "module",
   "main": "./dist/index.js",
   "exports": {
