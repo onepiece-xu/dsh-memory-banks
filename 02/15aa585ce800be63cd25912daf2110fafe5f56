@@ -1,0 +1,74 @@
+.gitattributes
+  h_13e2ae91bee783 1-5
+.gitignore
+  h_13e2ae91bee783 1-7
+FEATURES.md
+  h_13e2ae91bee783 1-138
+README.md
+  h_13e2ae91bee783 1-125
+cordis.patch.yml
+  h_13e2ae91bee783 1-20
+enable-session-index.patch.yml
+  h_13e2ae91bee783 1-27
+lib/client.js
+  h_13e2ae91bee783 1-96
+package-lock.json
+  h_13e2ae91bee783 1-597
+package.json
+  h_13e2ae91bee783 1-76
+src/core.ts
+  h_13e2ae91bee783 1-321
+src/index.ts
+  h_13e2ae91bee783 1-792
+src/json.ts
+  h_13e2ae91bee783 1-61
+src/learning.ts
+  h_13e2ae91bee783 1-412
+src/llm.ts
+  h_13e2ae91bee783 1-99
+src/message-source.ts
+  h_13e2ae91bee783 1-20
+src/records.ts
+  h_13e2ae91bee783 1-111
+src/repo.ts
+  h_13e2ae91bee783 1-476
+src/search.ts
+  h_13e2ae91bee783 1-50
+src/storage.ts
+  h_13e2ae91bee783 1-36
+src/templates.ts
+  h_13e2ae91bee783 1-339
+src/tools.ts
+  h_13e2ae91bee783 1-407
+tests/core.test.mjs
+  h_13e2ae91bee783 1-146
+tests/helpers.mjs
+  h_13e2ae91bee783 1-44
+tests/json.test.mjs
+  h_13e2ae91bee783 1-35
+tests/learning.test.mjs
+  h_13e2ae91bee783 1-302
+tests/plugin.test.mjs
+  h_13e2ae91bee783 1-490
+tests/records.test.mjs
+  h_13e2ae91bee783 1-103
+tests/repo.test.mjs
+  h_13e2ae91bee783 1-251
+tests/search.test.mjs
+  h_13e2ae91bee783 1-46
+tests/templates.test.mjs
+  h_13e2ae91bee783 1-126
+tsconfig.json
+  h_13e2ae91bee783 1-20
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "0215aa585ce800be63cd25912daf2110fafe5f56",
+  "prompts": {},
+  "humans": {
+    "h_13e2ae91bee783": {
+      "author": "xulihua <xulihua@xiaomi.com>"
+    }
+  }
+}
