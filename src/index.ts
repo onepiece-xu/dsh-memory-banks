@@ -738,7 +738,7 @@ export function apply(ctx: Context, rawConfig: Config) {
       id,
       scope: 'global',
       name: id,
-      description: 'How to use the durable hermes memory banks: when to add, replace, remove, search, pin, consolidate, and save skills',
+      description: 'How to use the durable memory banks (dsh-memory-banks): when to add, replace, remove, search, pin, consolidate, and save skills',
       body: tpl.memoryUsageSkillBody(),
       createdAt: nowIso,
       updatedAt: nowIso,
@@ -760,11 +760,15 @@ export function apply(ctx: Context, rawConfig: Config) {
       handler: (_req, res) => {
         const ready = repository
         const stats = ready === undefined
-          ? { plugin: name, state: 'loading', banks: [], entries: [] }
+          ? { plugin: name, state: 'loading', total: 0, injected: legacyInject, banks: [], entries: [] }
           : {
             plugin: name,
             state: 'ready',
             memoryMode: config.memoryMode,
+            // Field names the panel reads: `total` and `injected` are part of the
+            // client contract (a missing one showed up as "0 entries").
+            total: ready.all().length,
+            injected: legacyInject,
             project: projectKey() ?? null,
             banks: BANKS.map((bank) => ({
               bank,

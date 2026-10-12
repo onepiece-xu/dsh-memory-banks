@@ -436,6 +436,10 @@ test('the settings panel route registers only when a web server exists', async (
   assert.equal(stats.banks.length, 4)
   assert.deepEqual(stats.entries.map((entry) => entry.text), ['panel sees this'])
   assert.match(stats.banks[0].usage, /^\[\d+% — /)
+  // Fields the panel reads: a missing `total` rendered as "0 entries" in the live
+  // UI, so the client contract is asserted here.
+  assert.equal(stats.total, 1)
+  assert.equal(typeof stats.injected, 'boolean')
 })
 
 // ── config resolution ──────────────────────────────────────────────────────
