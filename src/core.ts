@@ -1,5 +1,5 @@
 /**
- * Pure dsh-plugin-memory core: banks, entry algebra, and write-time content scanning.
+ * Pure dsh-memory-banks core: banks, entry algebra, and write-time content scanning.
  *
  * Zero DSH imports and zero I/O on purpose — the host half (`src/index.ts`) only
  * wires services, so everything in this file is unit-testable with `node --test`.

@@ -7,7 +7,7 @@ import { CATEGORIES, type Category } from './records.js'
 import type { Bank, MemoryEntry } from './core.js'
 
 /** `MessageSource.kind` for everything this plugin injects. */
-export const SOURCE_KIND = 'dsh-plugin-memory'
+export const SOURCE_KIND = 'dsh-memory-banks'
 
 /** `MessageSource.form` values: what kind of thing was injected. */
 export const SOURCE_FORM_RECALL = 'recall'

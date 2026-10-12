@@ -2,7 +2,7 @@
  * The storage-domain declaration for every table this plugin owns.
  *
  * Domain name doubles as the backend unit name, so data lands in
- * `$DSH_HOME/storages/dsh_plugin_memory.json` under the shipped `json` backend.
+ * `$DSH_HOME/storages/dsh_memory_banks.json` under the shipped `json` backend.
  * Record schemas live in `records.ts` (zod); the plugin's own `Config` stays
  * Schemastery. Table names must match `^[a-z][a-z0-9_]*$` (the storage unit-name
  * rule), which is why the session index table is `session_index`.
@@ -21,7 +21,7 @@ import {
 } from './records.js'
 
 export const memoryDomainSpec = defineDomain({
-  name: 'dsh_plugin_memory',
+  name: 'dsh_memory_banks',
   version: 1,
   global: { schema: memoryGlobalSchema, initial: { seq: 0 } },
   tables: {

@@ -1,4 +1,4 @@
-# 功能对等清单：pi-hermes-memory → dsh-plugin-memory
+# 功能对等清单：pi-hermes-memory → dsh-memory-banks
 
 上游参照：`pi-hermes-memory@0.9.10`（Pi 扩展，Hermes agent 记忆机制移植）。
 本插件目标：在 DSH 0.2.0-rc.2 上用原生接缝实现同等能力，**不依赖 pi2dsh**。
@@ -50,7 +50,7 @@
 
 | 上游功能 | 上游实现 | 本插件实现 | 状态 |
 |---|---|---|---|
-| nudge（10 轮 或 15 次工具调用） | `nudgeInterval`/`nudgeToolCalls` | `agent/pre-step` 折进提示消息（`MessageSourceMap` 自定义 `dsh-plugin-memory` 类型），计数在 `session/event` | ✅ |
+| nudge（10 轮 或 15 次工具调用） | `nudgeInterval`/`nudgeToolCalls` | `agent/pre-step` 折进提示消息（`MessageSourceMap` 自定义 `dsh-memory-banks` 类型），计数在 `session/event` | ✅ |
 | 冻结快照注入（每会话一次） | 会话事件去重 | `memoryMode: 'legacy-inject'` 时 `agent/created` + `agent.inject(createUserMessage(...))`，WeakSet + 来源标记去重 | ✅ |
 | 纠错即时捕获 | 强/弱模式 + 否定模式 | `classifyCorrection()`：强模式直接存、弱模式需跟指令词、表扬/无关忽略；`session/event` 扫 `user/message`，每会话上限 | ✅ |
 | 后台复盘（LLM 产出记忆变更） | 进程内 `complete()` 旁路 / `pi -p` | ✅ `session/flush` 触发；`src/llm.ts` 用 `ctx.llm.stream` + `BlockAssembler` 做一次性调用（DSH 没有 `complete()`）；prompt + `validateReviewOperations()` 双重校验，按库分组原子落库，全程记 `reviews` 审计行 | ✅ |
@@ -70,7 +70,7 @@
 | 技能被模型发现 | Pi `resources_discover` | ✅ `ctx.skills.registerProvider(...)`：`list()`/`get()` 直接读存储域，改完立即生效（`register()` 是 first-wins 且不能原地更新，故不用） | ✅ |
 | 项目技能自动发现 | Pi `resources_discover` | ✅ provider 按 `project` 过滤；DSH 自带的 `$DSH_HOME/skills` 等来源不受影响 | ✅ |
 | `/memory-skills` 管理 | TUI 多选 | ✅ 命令列出技能（增删改由 `skill_manage` 完成） | ✅ |
-| `/learn-memory-tool` | 技能 | ✅ `/learn-memory-tool` 幂等创建全局技能 `using-dsh-plugin-memory`（工具/命令契约），经 provider 立即可见 | ✅ |
+| `/learn-memory-tool` | 技能 | ✅ `/learn-memory-tool` 幂等创建全局技能 `using-dsh-memory-banks`（工具/命令契约），经 provider 立即可见 | ✅ |
 
 ## 6. 常驻指令（pin）
 
@@ -94,9 +94,9 @@
 
 | 上游功能 | 上游实现 | 本插件实现 | 状态 |
 |---|---|---|---|
-| 配置项 | `dsh-plugin-memory-config.json`（30+ 字段） | `Config` 19 字段，**全部 `.volatile()`** → 出现在 DSH Settings → Plugins 表单里 | ✅ |
+| 配置项 | `dsh-memory-banks-config.json`（30+ 字段） | `Config` 19 字段，**全部 `.volatile()`** → 出现在 DSH Settings → Plugins 表单里 | ✅ |
 | 命令 | 9 条 | 9 条：`/memory-insights` `/memory-pin` `/memory-preview-context` `/memory-switch-project` `/memory-consolidate` `/memory-interview` `/memory-index-sessions` `/memory-skills` `/learn-memory-tool`（上游第 9 条 `/memory-sync-markdown` 为 ➖） | ✅ |
-| 设置页 | 无（靠文件） | Web 面板（`settings.section`）：各库用量条 + 条目 + 常驻指令 + 技能数，读 `GET /dsh-plugin-memory/stats` | ✅ |
+| 设置页 | 无（靠文件） | Web 面板（`settings.section`）：各库用量条 + 条目 + 常驻指令 + 技能数，读 `GET /dsh-memory-banks/stats` | ✅ |
 | 状态查看 | `/memory-insights` 文本 | 命令 + 面板 + HTTP 路由 | ✅ |
 
 ## 9. 多进程安全（尚未解决）
@@ -121,7 +121,7 @@
 1. **不依赖 pi2dsh**：`pi2dsh@0.25.2` 的 DSH peer 上限是 `<0.2.0`，与本机 0.2.0-rc.2 不匹配。
 2. **不引入 `better-sqlite3`**：DSH 原生服务已提供会话索引；记忆条数受限于有界库，检索用内存精确匹配更快且可在本地零依赖单测。
 3. **逻辑与 DSH 解耦**：`core/records/repo/templates` 零 DSH 依赖（本地 45 个单测覆盖），`tools.ts` 只做参数映射，`index.ts` 只做接线 —— 接缝变了也只动一层。
-4. **自定义 `MessageSourceMap` 类型**：DSH 的消息来源是合并可扩展的联合类型（"没有通用 plugin kind"），所以 `src/message-source.ts` 声明 `dsh-plugin-memory`，这也让注入内容可被识别与去重。
+4. **自定义 `MessageSourceMap` 类型**：DSH 的消息来源是合并可扩展的联合类型（"没有通用 plugin kind"），所以 `src/message-source.ts` 声明 `dsh-memory-banks`，这也让注入内容可被识别与去重。
 5. **命令只在需要参数时声明 `input`**：声明 `input` 会让 `/cmd` + 回车变成"先认领再回车"，无参命令不值得这个代价。
 6. **一次性模型调用用 `ctx.llm.stream` + `BlockAssembler`**：DSH 没有非流式入口；这是 `dsh-session-title-llm` 的同款做法。该调用是独立请求序列，**既不共享也不破坏**当前会话的前缀缓存。模型路由优先取 `llmProvider`/`llmModel` 配置，否则读 `agentDefaultModel.currentSelection()`；没有路由时复盘记为 skipped 而不是失败。
 7. **复盘/整合不阻塞 flush**：`session/flush` 是并行 awaited 事件，处理器只投递后台任务（`void`），避免把耐久检查点拖成模型调用；代价是进程若立刻退出，当次复盘可能未完成（下次启动会把它标失败）。

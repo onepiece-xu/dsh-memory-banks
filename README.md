@@ -1,4 +1,4 @@
-# dsh-plugin-memory
+# dsh-memory-banks
 
 > 仓库：<https://github.com/onepiece-xu/dsh-plugin-memory> · MIT
 
@@ -6,7 +6,7 @@ hermes-agent 那套**有界、持久**的记忆机制，做成 DSH 原生插件�
 
 - **6 个模型工具**（与上游同名同参）：`memory_add` / `memory_replace` / `memory_remove` / `memory_search` / `session_search` / `skill_manage`
 - **四个记忆库**：`memory` / `user` / `project` / `failure`，字符预算 + 超限拒写
-- **持久化**：`ctx.storageDomain` → `$DSH_HOME/storages/dsh_plugin_memory.json`（人类可读、原子写、带版本戳、失败回滚）
+- **持久化**：`ctx.storageDomain` → `$DSH_HOME/storages/dsh_memory_banks.json`（人类可读、原子写、带版本戳、失败回滚）
 - **两条学习路径**：nudge（10 轮或 15 次工具调用后提醒落盘）+ 纠错即时捕获（强/弱模式 + 否定模式）
 - **后台复盘**：会话耐久检查点（`session/flush`）触发一次独立模型调用，产出经校验的记忆变更并分库原子落库
 - **自动整合**：任何库写满时自动合并并重试一次；`/memory-consolidate` 可手动触发；崩溃中断的运行在下次启动被标记失败（同库/同会话并发有互斥）
@@ -90,8 +90,8 @@ npm test               # 构建 + 45 项 node:test 单测
 
 # 装进一个丢弃式 profile（不要用 web，避免打断正在跑的 GUI）
 dsh --profile dev --from-default-profile web --dump-config
-dsh plugin --profile dev add link:D:\Codes\dsh-plugins\dsh-plugin-memory
-dsh --profile dev --dump-config | Select-String dsh-plugin-memory
+dsh plugin --profile dev add link:D:\Codes\dsh-plugins\dsh-memory-banks
+dsh --profile dev --dump-config | Select-String dsh-memory-banks
 dsh --profile dev --dump-config-schema        # 真实导入本插件模块 + 校验 Config
 dsh --profile dev                              # 启动后即可用工具与命令
 ```
@@ -103,10 +103,10 @@ dsh --profile dev                              # 启动后即可用工具与命�
 已验证：
 
 - `npm run build` 通过；`npm test` **78/78** = 69 项纯逻辑单测 + **9 项真实模块集成测试**（工具/命令/提示段注册断言，`memory_add→search→replace→remove` 端到端，技能增删，pin→常驻段，nudge 与纠错路径，会话检索不可用时的可执行提示）
-- `dsh --profile dev --dump-config` 出现 `- id: dsh-plugin-memory` 及其 config
+- `dsh --profile dev --dump-config` 出现 `- id: dsh-memory-banks` 及其 config
 - `dsh --profile dev --dump-config-schema` **真实导入**本插件（含 `dsh-llm` 运行时依赖）并产出 19 个配置字段的 schema；新增错误 0（与 stock `web` 的既有 8 条 carrier 报错数量一致）
 
-尚未验证（需要真正启动一次）：工具是否出现在模型工具表、命令是否可用、nudge/纠错是否按预期触发。落盘检查 `~/.dsh/storages/dsh_plugin_memory.json`。
+尚未验证（需要真正启动一次）：工具是否出现在模型工具表、命令是否可用、nudge/纠错是否按预期触发。落盘检查 `~/.dsh/storages/dsh_memory_banks.json`。
 
 > **不要在项目目录里直接 `node dist/index.js`**：`@deepseek-ai/dsh-tools` 自身依赖 11 个 core peer（`dsh-scope`、`dsh-invariants` 等），只在 DSH 安装侧提供。插件的正式入口是 DSH loader；跑独立脚本请只 import 零依赖的 `dist/core.js`、`dist/repo.js`、`dist/templates.js`、`dist/records.js`。
 
@@ -114,7 +114,7 @@ dsh --profile dev                              # 启动后即可用工具与命�
 
 | pi-hermes-memory | 本插件 |
 |---|---|
-| MEMORY.md / USER.md 文件 | storage-domain JSON（`$DSH_HOME/storages/dsh_plugin_memory.json`），人类可读 |
+| MEMORY.md / USER.md 文件 | storage-domain JSON（`$DSH_HOME/storages/dsh_memory_banks.json`），人类可读 |
 | 自建 SQLite FTS5 trigram 会话索引 | **不自建**：消费宿主 `ctx.sessionQuery`（避免重复索引与单所有者冲突）；代价是召回按 token，1–2 字中文需要实测 |
 | 后台复盘 / 自动整合（进程内 `complete()` 旁路） | 已实现，但走 `ctx.llm.stream` + `BlockAssembler`（DSH 没有 `complete()`），复盘在 `session/flush` 投递为后台任务；该调用是独立请求序列，不影响当前会话的前缀缓存 |
 | 压缩前落盘 `flushOnCompact` | DSH 没有 pre-compaction 钩子（核实：只有失败回退 `compaction/summary-error`），无法阻塞；只能观察 |
@@ -122,9 +122,9 @@ dsh --profile dev                              # 启动后即可用工具与命�
 
 ## 发布注意
 
-- **npm 上 `dsh-plugin-memory` 这个名字已被占用**（`latest` 0.9.3，不是本仓库）。要发布到 npm 请用 scope，例如把 `name` 改成 `@onepiece-xu/dsh-plugin-memory`，或换一个未占用的名字。目前本仓库以**源码/Git 安装**方式维护即可：
+- **npm 上 `dsh-memory-banks` 这个名字已被占用**（`latest` 0.9.3，不是本仓库）。要发布到 npm 请用 scope，例如把 `name` 改成 `@onepiece-xu/dsh-plugin-memory`，或换一个未占用的名字。目前本仓库以**源码/Git 安装**方式维护即可：
   ```sh
-  dsh plugin --profile web add link:/path/to/dsh-plugin-memory   # 本地开发
+  dsh plugin --profile web add link:/path/to/dsh-memory-banks   # 本地开发
   dsh plugin --profile web add github:onepiece-xu/dsh-plugin-memory   # 从 GitHub 装
   ```
 - `peerDependencies` 必须**包含运行中的 DSH 版本**：装包前会校验 `@deepseek-ai/dsh` / `@deepseek-ai/dsh-*` 的范围，不匹配直接拒绝（例外：`dsh plugin allow-version <pkg>@<ver> --dsh-version <ver> --accept-risk`）。

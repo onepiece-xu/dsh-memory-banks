@@ -85,7 +85,7 @@ function makeContext(optionalServices = {}) {
   let seq = 0
 
   const domain = {
-    name: 'dsh_plugin_memory',
+    name: 'dsh_memory_banks',
     global: { get: () => ({ seq }), set: async (value) => { seq = value.seq } },
     table: (name) => {
       const table = tables[name]
@@ -181,8 +181,8 @@ test('a plugin entry registers its six tools, two prompt sections and nine comma
     'skill_manage',
   ])
   assert.deepEqual([...world.sections.keys()].sort(), [
-    'plugin:dsh-plugin-memory',
-    'plugin:dsh-plugin-memory-standing',
+    'plugin:dsh-memory-banks',
+    'plugin:dsh-memory-banks-standing',
   ])
   assert.deepEqual([...world.commands.keys()].sort(), [
     'learn-memory-tool',
@@ -199,10 +199,10 @@ test('a plugin entry registers its six tools, two prompt sections and nine comma
 
 test('the policy section states the contract, and the standing section starts empty', async () => {
   const world = await boot()
-  const policy = world.sections.get('plugin:dsh-plugin-memory').text()
+  const policy = world.sections.get('plugin:dsh-memory-banks').text()
   assert.match(policy, /memory_add/)
   assert.match(policy, /context, not instruction/)
-  assert.equal(world.sections.get('plugin:dsh-plugin-memory-standing').text(), '')
+  assert.equal(world.sections.get('plugin:dsh-memory-banks-standing').text(), '')
 })
 
 test('memory_add → memory_search → memory_replace → memory_remove over real storage', async () => {
@@ -285,7 +285,7 @@ test('/memory-pin drives the standing section, and the commands report real stat
   const pin = await world.commands.get('memory-pin').handler({ rawInput: 'never run find /' })
   assert.equal(pin.kind, 'success')
   assert.match(pin.text, /Pinned/)
-  assert.match(world.sections.get('plugin:dsh-plugin-memory-standing').text(), /never run find \//)
+  assert.match(world.sections.get('plugin:dsh-memory-banks-standing').text(), /never run find \//)
 
   const insights = await world.commands.get('memory-insights').handler({ rawInput: '' })
   assert.equal(insights.kind, 'success')
@@ -294,10 +294,10 @@ test('/memory-pin drives the standing section, and the commands report real stat
 
   const clear = await world.commands.get('memory-pin').handler({ rawInput: 'clear' })
   assert.match(clear.text, /Cleared 1 standing instruction/)
-  assert.equal(world.sections.get('plugin:dsh-plugin-memory-standing').text(), '')
+  assert.equal(world.sections.get('plugin:dsh-memory-banks-standing').text(), '')
 
   const learn = await world.commands.get('learn-memory-tool').handler({ rawInput: '' })
-  assert.match(learn.text, /Created global skill using-dsh-plugin-memory/)
+  assert.match(learn.text, /Created global skill using-dsh-memory-banks/)
   const again = await world.commands.get('learn-memory-tool').handler({ rawInput: '' })
   assert.match(again.text, /already exists/)
 })
@@ -337,7 +337,7 @@ test('the full nudge → correction → consolidate path is reachable from the w
   )
   assert.equal(decision.kind, 'enter')
   assert.equal(decision.messages.length, 2)
-  assert.equal(decision.messages[1].source.kind, 'dsh-plugin-memory')
+  assert.equal(decision.messages[1].source.kind, 'dsh-memory-banks')
 
   // A user correction is captured into the user bank without any model call.
   const onEvent = world.listeners.get('session/event')[0]
@@ -399,7 +399,7 @@ test('the skill registry receives a provider that reads current storage', async 
   }
   const world = await boot({}, { skills })
   assert.ok(provider, 'apply() must register a skill provider when the registry exists')
-  assert.equal(provider.name, 'dsh-plugin-memory')
+  assert.equal(provider.name, 'dsh-memory-banks')
 
   await run(world.tools.get('skill_manage'), {
     action: 'create', scope: 'global', name: 'deploy-here', description: 'How to deploy here', steps: ['run the pipeline'],
@@ -407,12 +407,12 @@ test('the skill registry receives a provider that reads current storage', async 
   const catalog = await provider.list({})
   assert.equal(catalog.length, 1)
   assert.equal(catalog[0].name, 'deploy-here')
-  assert.equal(catalog[0].provider, 'dsh-plugin-memory')
+  assert.equal(catalog[0].provider, 'dsh-memory-banks')
   assert.equal(catalog[0].invocation.modelInvocable, true)
 
   const document = await provider.get({ name: 'deploy-here', locator: 'deploy-here', rank: 500 })
   assert.match(document.content, /## Procedure/)
-  assert.equal(document.provider, 'dsh-plugin-memory')
+  assert.equal(document.provider, 'dsh-memory-banks')
 })
 
 test('the settings panel route registers only when a web server exists', async () => {
@@ -425,13 +425,13 @@ test('the settings panel route registers only when a web server exists', async (
   const world = await boot({}, { webServer })
   assert.equal(registered.length, 1)
   assert.equal(registered[0].kind, 'exact')
-  assert.equal(registered[0].path, '/dsh-plugin-memory/stats')
+  assert.equal(registered[0].path, '/dsh-memory-banks/stats')
 
   await run(world.tools.get('memory_add'), { target: 'memory', content: 'panel sees this' })
   let body = ''
   registered[0].handler({}, { writeHead: () => {}, end: (buffer) => { body = buffer.toString('utf8') } })
   const stats = JSON.parse(body)
-  assert.equal(stats.plugin, 'dsh-plugin-memory')
+  assert.equal(stats.plugin, 'dsh-memory-banks')
   assert.equal(stats.state, 'ready')
   assert.equal(stats.banks.length, 4)
   assert.deepEqual(stats.entries.map((entry) => entry.text), ['panel sees this'])
@@ -486,5 +486,5 @@ test('the nudge obeys its thresholds when config arrives as volatile wrappers', 
     async () => ({ kind: 'enter', messages: [{ id: 'm1', role: 'user', content: [] }] }),
   )
   assert.equal(decision.messages.length, 2)
-  assert.equal(decision.messages[1].source.kind, 'dsh-plugin-memory')
+  assert.equal(decision.messages[1].source.kind, 'dsh-memory-banks')
 })

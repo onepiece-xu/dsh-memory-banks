@@ -95,7 +95,7 @@ export function createOneShot(
       const assembler = new BlockAssembler()
       const message = createUserMessage({
         content: [{ type: 'text', text: request.user }],
-        source: { kind: 'dsh-plugin-memory', form: 'recall' },
+        source: { kind: 'dsh-memory-banks', form: 'recall' },
       })
       for await (const chunk of llm.stream({
         provider: resolved.provider,

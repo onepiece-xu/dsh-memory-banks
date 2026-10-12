@@ -4,13 +4,13 @@
  * `plugin` kind" (`@deepseek-ai/dsh-llm` message.d.ts:96-100).
  *
  * Declaring our kind here is what makes `createUserMessage({ source: { kind:
- * 'dsh-plugin-memory', form: 'recall' } })` type-check — and it is also what lets a
+ * 'dsh-memory-banks', form: 'recall' } })` type-check — and it is also what lets a
  * consumer recognize (and de-duplicate) memory-injected context later.
  */
 declare module '@deepseek-ai/dsh-llm' {
   interface MessageSourceMap {
-    'dsh-plugin-memory': {
-      kind: 'dsh-plugin-memory'
+    'dsh-memory-banks': {
+      kind: 'dsh-memory-banks'
       /** `recall` = recalled memory / nudge; `instructions` = standing directives. */
       form?: 'recall' | 'instructions'
     }

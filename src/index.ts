@@ -1,5 +1,5 @@
 /**
- * dsh-plugin-memory — host half: hermes-agent's bounded, durable memory banks for DSH.
+ * dsh-memory-banks — host half: hermes-agent's bounded, durable memory banks for DSH.
  *
  * Wiring only. Every rule lives in dependency-free modules:
  *   `core.ts`      bank algebra, budgets, matching, content scanning
@@ -42,7 +42,7 @@ import { createMemoryTools, type SessionHit } from './tools.js'
 // Declares this plugin's `MessageSourceMap` kind (type-only side effect).
 import type {} from './message-source.js'
 
-export const name = 'dsh-plugin-memory'
+export const name = 'dsh-memory-banks'
 
 // `webServer`, `skills`, `sessionQuery` and `llm` are deliberately NOT injected:
 // each is optional, and a memory plugin must still load in headless/SDK profiles.
@@ -216,7 +216,7 @@ export function apply(ctx: Context, rawConfig: Config) {
 
   // ── storage ────────────────────────────────────────────────────────────
   const opened = ctx.storageDomain.open(memoryDomainSpec)
-  ctx.effect(() => () => opened.then((domain) => domain.close()).catch(() => {}), 'dsh-plugin-memory: close domain')
+  ctx.effect(() => () => opened.then((domain) => domain.close()).catch(() => {}), 'dsh-memory-banks: close domain')
 
   // The repository is built lazily once the domain resolves; every tool call
   // awaits it, so a storage failure surfaces on first use instead of at load.
@@ -342,7 +342,7 @@ export function apply(ctx: Context, rawConfig: Config) {
     },
   }))
   if (disposeSkillProvider !== undefined) {
-    ctx.effect(() => disposeSkillProvider, 'dsh-plugin-memory: skill provider')
+    ctx.effect(() => disposeSkillProvider, 'dsh-memory-banks: skill provider')
   }
 
   // Tool bodies write through the storage domain; the catalog re-reads it, so
@@ -464,10 +464,10 @@ export function apply(ctx: Context, rawConfig: Config) {
 
   // ── prompt: policy + standing instructions ─────────────────────────────
   ctx.effect(() => ctx.systemPrompt.section({
-    name: 'plugin:dsh-plugin-memory',
+    name: 'plugin:dsh-memory-banks',
     order: SECTION_ORDER,
     text: () => (ctx.tools.get('memory_add') === undefined ? '' : tpl.MEMORY_POLICY),
-  }), 'dsh-plugin-memory: policy section')
+  }), 'dsh-memory-banks: policy section')
 
   // The system-prompt section provider is synchronous, so the pins are cached and
   // refreshed whenever they can change (write, session start, command).
@@ -479,7 +479,7 @@ export function apply(ctx: Context, rawConfig: Config) {
   ctx.on('session/created', () => void refreshStanding().catch(() => {}))
 
   ctx.effect(() => ctx.systemPrompt.section({
-    name: 'plugin:dsh-plugin-memory-standing',
+    name: 'plugin:dsh-memory-banks-standing',
     order: STANDING_SECTION_ORDER,
     text: () => {
       if (!config.standingInstructionsEnabled || standingCache.length === 0) return ''
@@ -492,7 +492,7 @@ export function apply(ctx: Context, rawConfig: Config) {
       }
       return tpl.standingBlock(kept)
     },
-  }), 'dsh-plugin-memory: standing section')
+  }), 'dsh-memory-banks: standing section')
 
   // A settings-form edit arrives as a loader volatile update. The event is real
   // (the loader README and the market plugin use it) but is not declared in this
@@ -609,7 +609,7 @@ export function apply(ctx: Context, rawConfig: Config) {
     })
   }
 
-  command('memory-insights', 'Show what the dsh-plugin-memory banks currently hold', undefined, async () => {
+  command('memory-insights', 'Show what the dsh-memory-banks banks currently hold', undefined, async () => {
     const ready = await repo()
     const pins = ready.standing()
     const skillList = ready.skills(undefined, projectKey())
@@ -731,7 +731,7 @@ export function apply(ctx: Context, rawConfig: Config) {
   // on demand through the host's skill catalog.
   command('learn-memory-tool', 'Save a global skill explaining how to use the memory tools', undefined, async () => {
     const ready = await repo()
-    const id = 'using-dsh-plugin-memory'
+    const id = 'using-dsh-memory-banks'
     if (ready.skill(id) !== undefined) return `Skill ${id} already exists — read it with skill_manage view ${id}.`
     const nowIso = new Date().toISOString()
     await ready.skillPut({
@@ -756,7 +756,7 @@ export function apply(ctx: Context, rawConfig: Config) {
     const webServer = (webCtx as unknown as { webServer: WebServer }).webServer
     ctx.effect(() => webServer.register({
       kind: 'exact',
-      path: '/dsh-plugin-memory/stats',
+      path: '/dsh-memory-banks/stats',
       handler: (_req, res) => {
         const ready = repository
         const stats = ready === undefined
@@ -781,7 +781,7 @@ export function apply(ctx: Context, rawConfig: Config) {
         res.writeHead(200, { 'content-type': 'application/json; charset=utf-8', 'content-length': String(body.length) })
         res.end(body)
       },
-    }), 'dsh-plugin-memory: stats route')
+    }), 'dsh-memory-banks: stats route')
   })
 
   void repoReady.then((ready) => {

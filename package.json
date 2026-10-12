@@ -1,5 +1,5 @@
 {
-  "name": "dsh-plugin-memory",
+  "name": "dsh-memory-banks",
   "version": "0.1.0",
   "description": "Durable, bounded memory for DeepSeek Harness: six memory tools, standing instructions, background review, crash-safe consolidation, content scanning, and a settings panel.",
   "license": "MIT",
