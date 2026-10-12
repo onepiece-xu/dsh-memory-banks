@@ -1,0 +1,18 @@
+lib/client.js
+  h_13e2ae91bee783 15,18,24,27
+src/index.ts
+  h_13e2ae91bee783 741,763,768-771
+tests/plugin.test.mjs
+  h_13e2ae91bee783 439-442
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "64828472e36ccb2a4d9b525d1532cff639ca48c7",
+  "prompts": {},
+  "humans": {
+    "h_13e2ae91bee783": {
+      "author": "xulihua <xulihua@xiaomi.com>"
+    }
+  }
+}
