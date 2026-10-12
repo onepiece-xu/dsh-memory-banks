@@ -1,0 +1,5 @@
+# Keep the repository LF-normalized: it is a Node/TypeScript package, and Windows
+# checkouts should not flip line endings on every commit.
+* text=auto eol=lf
+*.png binary
+*.jpg binary

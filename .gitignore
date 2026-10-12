@@ -1,0 +1,7 @@
+# Dependencies and build output are not source.
+node_modules/
+dist/
+
+# Local scratch
+*.log
+.tmp/

@@ -1,0 +1,27 @@
+# Overlay: turn on the host's session-history index for `session_search`.
+#
+# WHY THIS IS NOT IN THE BUNDLE PATCH
+# `@deepseek-ai/dsh-base` and `@deepseek-ai/dsh-web-app` ship the index switched
+# off — `session-query-sqlite` is configured `path: ':memory:'` + `openAt: never`
+# — so `ctx.sessionQuery.searchSessions()` fails with
+# SESSION_QUERY_SEARCH_DISABLED until a later patch layer enables it. Enabling it
+# writes a real index file and makes one service the single owner of that path,
+# which is a deployment decision, not something a memory plugin should turn on
+# behind your back.
+#
+# USE
+#   dsh --profile web --patch ./enable-session-index.patch.yml
+# or copy the row into the profile's own cordis.patch.yml
+# ($DSH_HOME/profiles/<profile>/cordis.patch.yml).
+#
+# ATTENTION
+#   * Single owner: one DSH process per index path. Two processes (web + headless)
+#     sharing this file is unsupported by the service.
+#   * Recall is token-based (FTS5 `unicode61`), not substring: a query must match
+#     indexed tokens. CJK behaviour is unverified — test before relying on it.
+#   * Deleting this row reverts to the disabled default; the index file stays on
+#     disk and can be removed by hand.
+- id: session-query-sqlite
+  config:
+    path: !!js dshHomePath('session-index.sqlite')
+    openAt: first-search

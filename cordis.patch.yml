@@ -1,0 +1,20 @@
+# dsh-plugin-memory bundle layer — registers the HOST half into a profile.
+#
+# The BROWSER half needs no row here: the module loader discovers it from
+# package.json `exports["./client"]` + `dsh.client`.
+#
+# PITFALL: `name` is a PACKAGE NAME resolved through the profile's node_modules,
+# not a relative path.
+#
+# Do NOT re-declare `storage` / `storage-json` / `storage-domain` here: the base
+# bundle already provides them, and duplicate loader ids fail the whole profile.
+- insert:
+    - id: dsh-plugin-memory
+      name: 'dsh-plugin-memory'
+      config:
+        memoryCharLimit: 2200
+        userCharLimit: 1375
+        projectCharLimit: 2200
+        failureCharLimit: 4400
+        injectSnapshot: false
+        searchLimit: 10
