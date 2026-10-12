@@ -1,0 +1,20 @@
+src/learning.ts
+  h_13e2ae91bee783 193-211,276
+src/llm.ts
+  h_13e2ae91bee783 49-76,80,82-85,108,130-152
+tests/learning.test.mjs
+  h_13e2ae91bee783 236-279
+tests/llm.test.mjs
+  h_13e2ae91bee783 1-78
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "79fb3549b6cd553e453c4cb427ac1659a57fbd29",
+  "prompts": {},
+  "humans": {
+    "h_13e2ae91bee783": {
+      "author": "xulihua <xulihua@xiaomi.com>"
+    }
+  }
+}
