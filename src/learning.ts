@@ -190,6 +190,25 @@ export function createLearning(deps: LearningDeps): LearningService {
   const now = (): string => deps.now?.() ?? new Date().toISOString()
   const log = (message: string): void => deps.log?.(message)
 
+  /**
+   * Apply one review batch, making room first if a bank is full — the same policy
+   * the write tools use. Without this, one over-budget proposal failed the whole
+   * review even when every other operation was valid (observed live: a three-
+   * operation project-bank review failed at 110% and again at 160% of budget).
+   */
+  async function applyBatchWithRoom(bank: Bank, batch: readonly core.Operation[]): Promise<number> {
+    const repo = await deps.repo()
+    const options = { source: 'review' as const, project: bank === 'project' ? deps.projectKey() : undefined }
+    try {
+      return (await repo.applyOperations(bank, batch, options)).applied
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error)
+      if (!/over budget/.test(message)) throw error
+      await runConsolidation(bank, 'review needed room')
+      return (await repo.applyOperations(bank, batch, options)).applied
+    }
+  }
+
   async function reviewSession(sessionId: string, events: readonly SessionEventLike[]): Promise<ReviewOutcome> {
     const key = `review:${sessionId}`
     if (inFlight.has(key)) {
@@ -254,11 +273,7 @@ export function createLearning(deps: LearningDeps): LearningService {
 
       let applied = 0
       for (const [bank, batch] of groupOperations(operations)) {
-        const result = await repo.applyOperations(bank, batch, {
-          source: 'review',
-          project: bank === 'project' ? deps.projectKey() : undefined,
-        })
-        applied += result.applied
+        applied += await applyBatchWithRoom(bank, batch)
       }
       log(`[review] applied ${applied} operation(s) from session ${sessionId}`)
       return finish('applied', applied)

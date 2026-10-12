@@ -46,12 +46,43 @@ export interface OneShotRequest {
   sessionId?: string
 }
 
-/** Build the callable the learning loop injects; `route` is re-read per call. */
+/**
+ * Failures worth one more attempt: the provider aborted the request, the answer
+ * arrived empty, or the route reported back-pressure. A refusal (bad request,
+ * missing credential, scan/validation failure) is NOT retried.
+ */
+export function isTransientFailure(message: string): boolean {
+  return /ABORTED|aborted|no text|RATE_LIMIT|QUOTA|timed out|ECONN|socket|fetch failed/i.test(message)
+}
+
+export interface OneShotOptions {
+  /** Extra attempts after the first (default 1). */
+  retries?: number
+  /** Delay between attempts, in ms (default 1500). */
+  retryDelayMs?: number
+}
+
+const delay = (ms: number): Promise<void> => new Promise((resolve) => setTimeout(resolve, ms))
+
+/**
+ * Build the callable the learning loop injects; `route` is re-read per call.
+ *
+ * Two robustness rules learned from the live host:
+ *   - ONE background call at a time. The provider aborted concurrent auxiliary
+ *     requests (209 `ABORTED` rows in one session), so calls are queued instead of
+ *     racing each other.
+ *   - One retry on a transient failure, because those aborts were intermittent:
+ *     the same call succeeded minutes later.
+ */
 export function createOneShot(
   llm: LlmRuntimeLike,
   route: () => LlmRoute | undefined,
+  options: OneShotOptions = {},
 ): (request: OneShotRequest) => Promise<string> {
-  return async (request) => {
+  const retries = Math.max(0, options.retries ?? 1)
+  const retryDelayMs = Math.max(0, options.retryDelayMs ?? 1500)
+
+  const attemptOnce = async (request: OneShotRequest): Promise<string> => {
     const resolved = route()
     if (resolved === undefined) throw new Error('no model route available for the memory review call')
 
@@ -74,7 +105,7 @@ export function createOneShot(
         maxTokens: request.maxTokens,
         signal: controller.signal,
         // The one working one-shot precedent (`dsh-session-title-llm`) always
-        // passes the owning session id; omitting it made the provider abort.
+        // passes the owning session id.
         ...(request.sessionId === undefined ? {} : { sessionId: request.sessionId as never }),
       })) {
         assembler.push(chunk)
@@ -95,5 +126,28 @@ export function createOneShot(
     } finally {
       clearTimeout(timer)
     }
+  }
+
+  const run = async (request: OneShotRequest): Promise<string> => {
+    let lastError: unknown
+    for (let attempt = 0; attempt <= retries; attempt++) {
+      try {
+        return await attemptOnce(request)
+      } catch (error) {
+        lastError = error
+        const message = error instanceof Error ? error.message : String(error)
+        if (attempt === retries || !isTransientFailure(message)) throw error
+        await delay(retryDelayMs)
+      }
+    }
+    throw lastError instanceof Error ? lastError : new Error(String(lastError))
+  }
+
+  /** Serialize every background call through one promise chain. */
+  let tail: Promise<unknown> = Promise.resolve()
+  return (request) => {
+    const queued = tail.then(() => run(request), () => run(request))
+    tail = queued.catch(() => undefined)
+    return queued
   }
 }

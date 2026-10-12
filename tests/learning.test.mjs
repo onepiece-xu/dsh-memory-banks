@@ -233,6 +233,50 @@ test('concurrent runs for the same session or bank are refused, not interleaved'
   assert.equal((await first).applied, true)
 })
 
+test('a review batch that overflows a bank consolidates first, then applies', async () => {
+  // Set the bank up under a generous budget, then tighten it — the realistic way
+  // a bank ends up over budget (observed live at 110% and 160%).
+  const base = makeRepo({ limits: { ...DEFAULT_LIMITS, memory: 400 } })
+  for (const word of ['alpha', 'beta', 'gamma']) {
+    await base.repo.add({ target: 'memory', content: `${word} `.repeat(10).trim() })
+  }
+  const repo = new MemoryRepository({
+    ...base.tables,
+    global: base.globalSlot,
+    limits: { ...DEFAULT_LIMITS, memory: 100 },
+    now: () => '2026-10-12T00:00:00.000Z',
+  })
+
+  // Call 1: the review plan (one entry that will not fit). Call 2: the consolidation
+  // plan the overflow path must trigger. Call 3: the review retry.
+  const answers = [
+    JSON.stringify({ operations: [{ kind: 'add', target: 'memory', content: 'delta '.repeat(10).trim() }] }),
+    JSON.stringify({ entries: ['merged one', 'merged two'] }),
+  ]
+  let call = 0
+  const service = createLearning({
+    repo: async () => repo,
+    config: { ...CONFIG, reviewMinTurns: 1 },
+    oneShot: async () => answers[Math.min(call++, answers.length - 1)],
+    projectKey: () => 'alpha-11111111',
+    now: tickingNow(),
+    log: () => {},
+  })
+
+  const events = [
+    { type: 'turn/start' },
+    { type: 'user/message', data: { content: [{ type: 'text', text: 'remember delta' }] } },
+  ]
+  const outcome = await service.reviewSession('s-overflow', events)
+  assert.equal(outcome.record.status, 'applied')
+  assert.equal(outcome.applied, 1)
+  assert.ok(repo.all().some((entry) => entry.text.startsWith('delta')))
+  assert.equal(repo.consolidations().at(-1).status, 'completed')
+  // Two model calls only: the review plan and the consolidation plan. The retry
+  // after making room is a repository call, not another model call.
+  assert.equal(call, 2)
+})
+
 test('takeChunk takes whole entries up to the chunk size, always at least one', () => {
   assert.deepEqual(takeChunk(['aa', 'bb', 'cc'], 4), ['aa', 'bb'])
   assert.deepEqual(takeChunk(['aaaaa', 'b'], 4), ['aaaaa']) // an oversized first entry still returns
