@@ -1,0 +1,38 @@
+FEATURES.md
+  h_13e2ae91bee783 1,53,73,97,99,124
+README.md
+  h_13e2ae91bee783 1,9,93-94,106,109,117,125,127
+cordis.patch.yml
+  h_13e2ae91bee783 1,12-13
+lib/client.js
+  h_13e2ae91bee783 1,7,13,18-19,27-28,50,60,80,85,91
+package-lock.json
+  h_13e2ae91bee783 2,8,37-39
+package.json
+  h_13e2ae91bee783 2
+src/core.ts
+  h_13e2ae91bee783 2
+src/index.ts
+  h_13e2ae91bee783 2,45,219,345,467,470,482,495,612,734,759,784
+src/llm.ts
+  h_13e2ae91bee783 98
+src/message-source.ts
+  h_13e2ae91bee783 7,12-13
+src/storage.ts
+  h_13e2ae91bee783 5,24
+src/templates.ts
+  h_13e2ae91bee783 10
+tests/plugin.test.mjs
+  h_13e2ae91bee783 88,184-185,202,205,288,297,300,340,402,410,415,428,434,489
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "a4c0b402c29429393a93bb6418071be10136abf4",
+  "prompts": {},
+  "humans": {
+    "h_13e2ae91bee783": {
+      "author": "xulihua <xulihua@xiaomi.com>"
+    }
+  }
+}
