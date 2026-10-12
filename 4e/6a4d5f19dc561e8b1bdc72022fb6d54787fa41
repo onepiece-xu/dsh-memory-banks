@@ -1,0 +1,16 @@
+README.md
+  h_13e2ae91bee783 3-4,125-129
+package.json
+  h_13e2ae91bee783 4,6-28
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.7.5",
+  "base_commit_sha": "4e6a4d5f19dc561e8b1bdc72022fb6d54787fa41",
+  "prompts": {},
+  "humans": {
+    "h_13e2ae91bee783": {
+      "author": "xulihua <xulihua@xiaomi.com>"
+    }
+  }
+}
