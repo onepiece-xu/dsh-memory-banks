@@ -120,6 +120,29 @@ dsh --profile dev                              # 启动后即可用工具与命�
 | 压缩前落盘 `flushOnCompact` | DSH 没有 pre-compaction 钩子（核实：只有失败回退 `compaction/summary-error`），无法阻塞；只能观察 |
 | Pi TUI 渲染 / `pi.registerCommand` | DSH 命令是纯文本返回；富交互走客户端 bundle（本插件有 settings 面板） |
 
+## 推荐部署配置（profile 覆盖）
+
+插件默认值是照搬上游 Hermes 的 **2200 / 1375**，那是"记忆会被整块注入系统提示"时代的尺寸。本插件默认 `memoryMode: policy-only`（记忆按需检索、**不注入**），所以预算放大几乎只赚不亏。放在 **profile 的 `cordis.patch.yml`** 覆盖（而不是改插件默认值），这样插件升级不冲突：
+
+```yaml
+# $DSH_HOME/profiles/<profile>/cordis.patch.yml
+# 注意：patch 的 config 是整体替换，只写要改的字段，其余回落 schema 默认值。
+- id: dsh-memory-banks
+  config:
+    memoryCharLimit: 8000
+    userCharLimit: 4000
+    projectCharLimit: 8000
+    failureCharLimit: 8000
+
+# 打开宿主的会话历史索引（否则 session_search 恒报 SESSION_QUERY_SEARCH_DISABLED）
+- id: session-query-sqlite
+  config:
+    path: !!js dshHomePath('session-index.sqlite')
+    openAt: first-search
+```
+
+改完重启一次 `dsh web` 生效（配置层 HMR 通常也能热重组，但重启最稳）。第二段就是本包 [`enable-session-index.patch.yml`](enable-session-index.patch.yml) 的内容，用 `dsh --profile web --patch ./enable-session-index.patch.yml` 也可以。该索引**一个路径只能由一个进程拥有**，别让 headless 和 web 指向同一个文件。
+
 ## 安装与发布
 
 从 GitHub 安装（推荐，无需 npm 发布）：
@@ -129,7 +152,7 @@ dsh plugin --profile web add github:onepiece-xu/dsh-memory-banks
 # 本地开发用 link：dsh plugin --profile web add link:/path/to/dsh-memory-banks
 ```
 
-发布到 npm：**`dsh-memory-banks` 这个名字在 npm 上是空的**（2026-10-12 核实），`npm login` 之后直接 `npm publish` 即可（`publishConfig.access` 已设 `public`，`files` 只带 `dist` / `lib` / patch / README）。注意 `dist/` 不在 git 里，发布前先 `npm run build`（`prepublishOnly` 未配置，建议加一条 `"prepublishOnly": "npm run build"`）。
+发布到 npm：**`dsh-memory-banks` 这个名字在 npm 上是空的**（2026-10-12 核实），`npm login` 之后直接 `npm publish` 即可（`publishConfig.access` 已设 `public`，`files` 只带 `dist` / `lib` / patch / README，`prepublishOnly` 会先跑 `npm run build`，因为 `dist/` 不在 git 里）。
 
 其它注意：
 
